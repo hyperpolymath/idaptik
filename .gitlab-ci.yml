@@ -1,0 +1,233 @@
+# Ultimate CI/CD for IDApTIK-reversible
+# Features: Multi-language, Security, Reversibility, Auto-reject, Parallel Jobs
+
+stages:
+  - setup
+  - build
+  - test
+  - security
+  - reversibility
+  - deploy
+  - cleanup
+
+variables:
+  DOCKER_IMAGE: "registry.gitlab.com/hyperpolymath/idaptik-reversible:latest"
+  CACHE_KEY: "$CI_COMMIT_REF_SLUG"
+  MIX_ENV: "test"
+  CARGO_HOME: "$CI_PROJECT_DIR/cargo"
+  STACK_ROOT: "$CI_PROJECT_DIR/stack"
+
+# Cache for dependencies and build artifacts
+cache:
+  key: "$CACHE_KEY"
+  paths:
+    - node_modules/
+    - _build/
+    - deps/
+    - target/
+    - .stack-work/
+    - cargo/
+
+# --- Setup ---
+setup:node:
+  stage: setup
+  image: node:20
+  script:
+    - npm install -g bun
+    - bun install
+  artifacts:
+    paths:
+      - node_modules/
+    expire_in: 1 hour
+
+setup:elixir:
+  stage: setup
+  image: elixir:1.15
+  script:
+    - mix local.hex --force
+    - mix local.rebar --force
+    - mix deps.get
+  artifacts:
+    paths:
+      - deps/
+      - _build/
+    expire_in: 1 hour
+
+setup:rust:
+  stage: setup
+  image: rust:1.70
+  script:
+    - rustup component add clippy rustfmt
+    - cargo fetch
+  artifacts:
+    paths:
+      - cargo/
+      - target/
+    expire_in: 1 hour
+
+setup:haskell:
+  stage: setup
+  image: haskell:9.4
+  script:
+    - stack setup
+    - stack build --only-dependencies
+  artifacts:
+    paths:
+      - .stack-work/
+    expire_in: 1 hour
+
+# --- Build ---
+build:rescript:
+  stage: build
+  image: node:20
+  script:
+    - bun run build
+  artifacts:
+    paths:
+      - dist/
+    expire_in: 1 week
+
+build:elixir:
+  stage: build
+  image: elixir:1.15
+  script:
+    - mix compile --warnings-as-errors
+  artifacts:
+    paths:
+      - _build/
+    expire_in: 1 week
+
+build:rust:
+  stage: build
+  image: rust:1.70
+  script:
+    - cargo build --release
+  artifacts:
+    paths:
+      - target/release/
+    expire_in: 1 week
+
+build:haskell:
+  stage: build
+  image: haskell:9.4
+  script:
+    - stack build
+  artifacts:
+    paths:
+      - .stack-work/install/
+    expire_in: 1 week
+
+# --- Test ---
+test:rescript:
+  stage: test
+  image: node:20
+  script:
+    - bun run test
+  needs: ["build:rescript"]
+
+test:elixir:
+  stage: test
+  image: elixir:1.15
+  script:
+    - mix test
+  needs: ["build:elixir"]
+
+test:rust:
+  stage: test
+  image: rust:1.70
+  script:
+    - cargo test --release
+  needs: ["build:rust"]
+
+test:haskell:
+  stage: test
+  image: haskell:9.4
+  script:
+    - stack test
+  needs: ["build:haskell"]
+
+# --- Security ---
+sast:
+  stage: security
+  image: registry.gitlab.com/gitlab-org/security-products/sast:latest
+  script:
+    - /run.sh analyze .
+  artifacts:
+    reports:
+      sast: gl-sast-report.json
+  allow_failure: false
+
+secret_detection:
+  stage: security
+  image: registry.gitlab.com/gitlab-org/security-products/secret-detection:latest
+  script:
+    - /run.sh analyze .
+  artifacts:
+    reports:
+      secret_detection: gl-secret-detection-report.json
+  allow_failure: false
+
+dependency_scan:
+  stage: security
+  image: registry.gitlab.com/gitlab-org/security-products/dependency-scanning:latest
+  script:
+    - /run.sh analyze .
+  artifacts:
+    reports:
+      dependency_scanning: gl-dependency-scanning-report.json
+  allow_failure: false
+
+container_scan:
+  stage: security
+  image: registry.gitlab.com/gitlab-org/security-products/container-scanning:latest
+  script:
+    - /run.sh analyze .
+  artifacts:
+    reports:
+      container_scanning: gl-container-scanning-report.json
+  allow_failure: false
+
+# --- Reversibility Checks ---
+check:reversibility:
+  stage: reversibility
+  image: elixir:1.15
+  script:
+    - mix run scripts/check_reversibility.exs
+  needs: ["test:elixir", "test:rust", "test:haskell"]
+  allow_failure: false
+
+# --- Deploy ---
+deploy:staging:
+  stage: deploy
+  image: docker:24
+  services:
+    - docker:24-dind
+  script:
+    - docker build -t $DOCKER_IMAGE .
+    - docker push $DOCKER_IMAGE
+  environment:
+    name: staging
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+
+deploy:production:
+  stage: deploy
+  image: docker:24
+  services:
+    - docker:24-dind
+  script:
+    - docker pull $DOCKER_IMAGE
+    - docker tag $DOCKER_IMAGE registry.gitlab.com/hyperpolymath/idaptik-reversible:prod
+    - docker push registry.gitlab.com/hyperpolymath/idaptik-reversible:prod
+  environment:
+    name: production
+  rules:
+    - if: $CI_COMMIT_TAG
+  when: manual
+
+# --- Cleanup ---
+cleanup:
+  stage: cleanup
+  script:
+    - echo "Cleaning up old artifacts..."
+  when: always
