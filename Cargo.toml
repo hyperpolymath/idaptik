@@ -1,0 +1,19 @@
+[package]
+name = "idaptik-core"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bevy = "0.17"
+bevy_rapier2d = "0.31"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+flatbuffers = "25"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+
+[profile.dev]
+opt-level = 1

@@ -1,0 +1,21 @@
+{
+  "name": "idaptik-frontend",
+  "version": "0.1.0",
+  "scripts": {
+    "res:build": "rescript",
+    "res:clean": "rescript clean",
+    "res:dev": "rescript build -w",
+    "build": "npm run res:build && vite build",
+    "dev": "vite",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@rescript/core": "^1.0.0",
+    "phoenix": "^1.7.0"
+  },
+  "devDependencies": {
+    "rescript": "^11.0.0",
+    "vite": "^5.0.0",
+    "vite-plugin-wasm": "^3.3.0"
+  }
+}

@@ -1,0 +1,258 @@
+# IDApTIK Core - Asymmetric Camera System
+
+## Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────────┐
+│ ELIXIR SERVER (Phoenix + Bandit)                        │
+│ • Multiplayer sync (CURP)                               │
+│ • Game state authority                                  │
+│ • FlatBuffers serialization                             │
+└─────────────────────────────────────────────────────────┘
+                         ↓ Port (stdin/stdout)
+                         ↓ JSON messages
+         ┌───────────────┴────────────────┐
+         ↓                                 ↓
+┌──────────────────┐            ┌──────────────────┐
+│ RUST CORE        │            │ RUST CORE        │
+│ (Player 1)       │            │ (Player 2)       │
+│                  │            │                  │
+│ Role: HACKER     │            │ Role: INFILTRATOR│
+│ View: Top-Down   │            │ View: Side-Scroll│
+│                  │            │                  │
+│ • Sees ALL       │            │ • Limited vision │
+│ • Strategic      │            │ • Action-focused │
+│ • Can pan around │            │ • Follows player │
+└──────────────────┘            └──────────────────┘
+```
+
+## The Asymmetric Views
+
+### Hacker View (Top-Down)
+- **Camera**: Orthographic, looking straight down
+- **Visibility**: Sees ALL entities (guards, cameras, objectives)
+- **Control**: WASD to pan camera around the level
+- **Purpose**: Strategic overview, coordinate with Infiltrator
+- **Cognitive**: Must communicate what they see to Infiltrator
+
+### Infiltrator View (Side-Scrolling)
+- **Camera**: Follows player, side-scrolling platformer style
+- **Visibility**: Limited radius (300 units), fades at edges
+- **Control**: WASD for movement, Space for interaction
+- **Purpose**: Direct action, stealth, infiltration
+- **Cognitive**: Must build mental map from Hacker's guidance
+
+## Building the Mental Model Together
+
+The game forces **asymmetric information exchange**:
+
+1. **Hacker sees guard patrol routes** → Must describe to Infiltrator
+2. **Infiltrator sees immediate threats** → Must report to Hacker
+3. **Neither has complete picture alone** → Must collaborate
+
+This creates emergent gameplay where players develop shared language
+and understanding of the level layout.
+
+## File Structure
+
+```
+idaptik-core/
+├── Cargo.toml                          # Rust dependencies
+├── src/
+│   ├── main.rs                         # Entry point, Bevy app setup
+│   ├── game_state.rs                   # Shared state, entity types
+│   ├── port_communication.rs           # Elixir ↔ Rust via stdin/stdout
+│   └── cameras/
+│       ├── mod.rs
+│       ├── hacker_view.rs              # Top-down camera system
+│       └── infiltrator_view.rs         # Side-scroll camera system
+```
+
+## Building
+
+```bash
+cd idaptik-core
+cargo build --release
+
+# Binary will be at: target/release/idaptik-core
+```
+
+## Running Standalone (Test)
+
+```bash
+# Hacker view
+./target/release/idaptik-core --role hacker --player-id 1
+
+# Infiltrator view
+./target/release/idaptik-core --role infiltrator --player-id 2
+```
+
+## Integration with Elixir Server
+
+The Rust core communicates via **Ports** (stdin/stdout) for maximum stability.
+
+### Elixir Side (Port Supervisor)
+
+```elixir
+defmodule IDApTIK.RustCore.Supervisor do
+  use GenServer
+
+  def start_link(role, player_id) do
+    GenServer.start_link(__MODULE__, {role, player_id})
+  end
+
+  def init({role, player_id}) do
+    # Spawn Rust process as Port
+    port = Port.open({:spawn_executable, rust_executable()}, [
+      :binary,
+      :exit_status,
+      args: ["--role", to_string(role), "--player-id", to_string(player_id)],
+      line: 8192
+    ])
+
+    {:ok, %{port: port, role: role, player_id: player_id}}
+  end
+
+  # Send game state to Rust
+  def send_state_update(pid, entities) do
+    message = %{
+      msg_type: "state_update",
+      data: entities
+    }
+    
+    GenServer.cast(pid, {:send, Jason.encode!(message)})
+  end
+
+  def handle_cast({:send, json}, state) do
+    Port.command(state.port, json <> "\n")
+    {:noreply, state}
+  end
+
+  # Receive input from Rust
+  def handle_info({port, {:data, {:line, line}}}, %{port: port} = state) do
+    case Jason.decode(line) do
+      {:ok, %{"msg_type" => "player_input", "data" => data}} ->
+        # Forward to game logic
+        IDApTIK.GameLogic.handle_player_input(state.player_id, data)
+        
+      {:ok, %{"msg_type" => "player_action", "data" => data}} ->
+        IDApTIK.GameLogic.handle_player_action(state.player_id, data)
+        
+      _ ->
+        :ok
+    end
+    
+    {:noreply, state}
+  end
+
+  defp rust_executable do
+    # Path to compiled Rust binary
+    Path.join(:code.priv_dir(:idaptik), "rust/idaptik-core")
+  end
+end
+```
+
+## Message Protocol (JSON over stdin/stdout)
+
+### From Elixir to Rust
+
+```json
+{
+  "msg_type": "state_update",
+  "data": [
+    {
+      "id": 1,
+      "entity_type": "Infiltrator",
+      "position": {"x": 100.0, "y": 200.0},
+      "velocity": {"x": 0.0, "y": 0.0},
+      "visible_to_hacker": true,
+      "visible_to_infiltrator": true
+    },
+    {
+      "id": 2,
+      "entity_type": "Guard",
+      "position": {"x": 500.0, "y": 300.0},
+      "velocity": {"x": -50.0, "y": 0.0},
+      "visible_to_hacker": true,
+      "visible_to_infiltrator": false
+    }
+  ]
+}
+```
+
+### From Rust to Elixir
+
+```json
+{
+  "msg_type": "player_input",
+  "player_id": 1,
+  "data": {
+    "movement": {"x": 1.0, "y": 0.0}
+  }
+}
+```
+
+```json
+{
+  "msg_type": "player_action",
+  "player_id": 2,
+  "data": {
+    "action": "interact"
+  }
+}
+```
+
+## Key Design Decisions
+
+### Why Ports Instead of Rustler NIFs?
+
+**Dependability > Performance**
+
+- **Isolation**: Rust crash doesn't crash BEAM VM
+- **Stability**: Complex Bevy rendering loop won't block Elixir
+- **Safety**: Clear process boundary, easy to restart on failure
+
+### Why JSON Instead of FlatBuffers for Ports?
+
+**Simplicity for Port Communication**
+
+- FlatBuffers still used for network (Elixir ↔ Elixir over QUIC)
+- Ports use JSON because:
+  - Simpler to debug (human-readable)
+  - Lower coupling between Rust and Elixir
+  - Port bandwidth is local, not network-constrained
+
+### Camera System Design
+
+**Separate rendering, shared state**
+
+- Both cameras receive identical game state from Elixir
+- Rendering systems filter based on role
+- No special server logic needed for asymmetric views
+- Pure client-side rendering difference
+
+## Next Steps
+
+1. **Test Standalone**: Run both roles separately, verify rendering
+2. **Integrate with Elixir**: Add Port supervisor to your Phoenix app
+3. **Add Rapier Physics**: Integrate collision detection for Infiltrator
+4. **Replace Gizmos with Sprites**: Use proper 2D assets
+5. **Add Guard AI**: Implement patrol behavior in Elixir
+6. **Voice Chat Integration**: Add real-time comms between players
+
+## Performance Notes
+
+- Bevy runs at ~60 FPS by default
+- Port communication: ~100-200 messages/sec is fine
+- State updates should be ~20-30 Hz (not every frame)
+- Input buffering handled by Bevy automatically
+
+## Debugging
+
+Run with RUST_LOG for detailed logging:
+
+```bash
+RUST_LOG=info ./target/release/idaptik-core --role hacker --player-id 1
+```
+
+Levels: `error`, `warn`, `info`, `debug`, `trace`

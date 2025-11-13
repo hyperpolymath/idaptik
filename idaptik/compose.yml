@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  # Elixir Phoenix backend (you already have this)
+  backend:
+    build: ./backend
+    ports:
+      - "4000:4000"
+    environment:
+      - MIX_ENV=dev
+      - PORT=4000
+    volumes:
+      - ./backend:/app
+    command: mix phx.server
+    networks:
+      - idaptik-net
+
+  # Frontend development server
+  frontend:
+    image: docker.io/library/node:20-alpine
+    working_dir: /app
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: sh -c "npm install && npm run dev"
+    depends_on:
+      - backend
+    networks:
+      - idaptik-net
+
+  # PostgreSQL database (if needed for your Elixir backend)
+  database:
+    image: docker.io/library/postgres:16-alpine
+    environment:
+      - POSTGRES_USER=idaptik
+      - POSTGRES_PASSWORD=idaptik_dev
+      - POSTGRES_DB=idaptik_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - idaptik-net
+
+volumes:
+  pgdata:
+
+networks:
+  idaptik-net:
+    driver: bridge

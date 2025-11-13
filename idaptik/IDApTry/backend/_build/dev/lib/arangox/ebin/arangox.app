@@ -1,0 +1,13 @@
+{application,arangox,
+             [{modules,['Elixir.Arangox','Elixir.Arangox.Client',
+                        'Elixir.Arangox.Connection','Elixir.Arangox.Endpoint',
+                        'Elixir.Arangox.Error','Elixir.Arangox.Request',
+                        'Elixir.Arangox.Response',
+                        'Elixir.DBConnection.Query.Arangox.Request',
+                        'Elixir.DBConnection.Query.BitString']},
+              {optional_applications,[velocy,jason,gun,mint]},
+              {applications,[kernel,stdlib,elixir,logger,db_connection,velocy,
+                             jason,gun,mint]},
+              {description,"ArangoDB 3.4+ driver for Elixir with connection pooling, support for VelocyStream, active failover, transactions and streamed cursors.\n"},
+              {registered,[]},
+              {vsn,"0.5.6"}]}.

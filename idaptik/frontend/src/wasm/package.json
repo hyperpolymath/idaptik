@@ -1,0 +1,18 @@
+{
+  "name": "idaptik-engine",
+  "type": "module",
+  "collaborators": [
+    "IDApTIK Team"
+  ],
+  "version": "0.1.0",
+  "files": [
+    "idaptik_engine_bg.wasm",
+    "idaptik_engine.js",
+    "idaptik_engine.d.ts"
+  ],
+  "main": "idaptik_engine.js",
+  "types": "idaptik_engine.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}

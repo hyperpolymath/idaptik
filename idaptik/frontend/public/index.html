@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IDApTIK - Multiplayer Stealth Game</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Courier New', monospace;
+      background: #0f0f1e;
+      color: #e0e0e0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    #game-container {
+      background: #16213e;
+      border: 3px solid #4ecdc4;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 0 20px rgba(78, 205, 196, 0.3);
+    }
+    
+    h1 {
+      text-align: center;
+      color: #4ecdc4;
+      margin-bottom: 10px;
+      font-size: 2.5em;
+      text-shadow: 0 0 10px rgba(78, 205, 196, 0.5);
+    }
+    
+    #game-canvas {
+      display: block;
+      background: #1a1a2e;
+      border: 2px solid #2a2a4e;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
+    
+    #controls {
+      margin-top: 15px;
+      padding: 15px;
+      background: #1a1a2e;
+      border-radius: 5px;
+      border: 1px solid #2a2a4e;
+    }
+    
+    #controls h3 {
+      color: #4ecdc4;
+      margin-bottom: 10px;
+    }
+    
+    #controls ul {
+      list-style: none;
+      padding: 0;
+    }
+    
+    #controls li {
+      padding: 5px 0;
+      color: #b0b0c0;
+    }
+    
+    #controls kbd {
+      background: #2a2a4e;
+      padding: 3px 8px;
+      border-radius: 3px;
+      font-family: 'Courier New', monospace;
+      color: #4ecdc4;
+      border: 1px solid #3a3a5e;
+    }
+    
+    #status {
+      margin-top: 10px;
+      padding: 10px;
+      background: #1a1a2e;
+      border-radius: 5px;
+      text-align: center;
+      color: #4ecdc4;
+      border: 1px solid #2a2a4e;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #4ecdc4;
+    }
+    
+    .loading::after {
+      content: '...';
+      animation: dots 1.5s steps(4, end) infinite;
+    }
+    
+    @keyframes dots {
+      0%, 20% { content: '.'; }
+      40% { content: '..'; }
+      60%, 100% { content: '...'; }
+    }
+  </style>
+</head>
+<body>
+  <div id="game-container">
+    <h1>IDApTIK</h1>
+    <canvas id="game-canvas" width="800" height="600"></canvas>
+    
+    <div id="controls">
+      <h3>Controls</h3>
+      <ul>
+        <li><kbd>W A S D</kbd> or <kbd>Arrow Keys</kbd> — Move</li>
+        <li><kbd>Shift</kbd> — Sprint (louder, more visible)</li>
+        <li><kbd>Ctrl</kbd> — Crouch (quieter, less visible)</li>
+        <li><kbd>Z</kbd> — Prone (quietest, hardest to see)</li>
+      </ul>
+    </div>
+    
+    <div id="status">
+      <span class="loading">Loading game engine</span>
+    </div>
+  </div>
+  
+  <script type="module" src="/src/Main.bs.js"></script>
+</body>
+</html>
