@@ -1,0 +1,211 @@
+# IDApTIK - Fully Optimized Polyglot CI/CD Configuration (Elixir/Rust/Rescript/Deno)
+# Uses Rust as the base image for core tooling (cargo) and leverages Deno/Elixir images.
+
+stages:
+  - lint
+  - test
+  - build
+  - security
+  - deploy
+
+variables:
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: "/certs"
+  PODMAN_USERNS: keep-id
+  # DATABASE_SERVICES: Used for Podman Compose testing (not directly in .gitlab-ci.yml)
+
+default:
+  # Use Rust as the core image for general build scripts and cargo availability
+  image: rust:latest
+  before_script:
+    - echo "Starting IDApTIK Job..."
+    # Ensure Rescript/Deno tooling is available globally for multi-step jobs if needed
+
+.cache_template: &cache_config
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - core/target/     # Cache Rust build artifacts
+      - client/node_modules/
+      - backend/deps/    # Cache Elixir dependencies
+
+# ==============================================================================
+# 1. LINT STAGE: Code Quality and Configuration Validation
+# ==============================================================================
+
+lint:shell:
+  stage: lint
+  image: koalaman/shellcheck-alpine:stable
+  script:
+    - shellcheck **/*.nu # Use nushell scripts, but shellcheck is used for generic scripts
+  only:
+    changes:
+      - "**/*.sh"
+      - "**/*.nu"
+
+lint:yaml:
+  stage: lint
+  image: sdesbure/yamllint
+  script:
+    - yamllint -c .yamllint .
+
+lint:markdown:
+  stage: lint
+  image: denoland/deno:latest # Use preferred Deno runtime
+  script:
+    - deno install -A --unstable npm:markdownlint-cli
+    - markdownlint '**/*.md'
+
+lint:elixir:
+  stage: lint
+  image: elixir:latest
+  script:
+    - mix local.hex --force
+    - mix deps.get --only dev
+    - mix credo --strict # FOSS Credo for code quality
+
+lint:nickel:
+  stage: lint
+  # Uses the default Rust image for cargo install
+  script:
+    - cargo install nickel-lang-cli # Install Nickel CLI for checking
+    - nickel check config/nickel/**/*.ncl # Checks schema and rules validity
+
+# ==============================================================================
+# 2. TEST STAGE: Unit and Integration Testing
+# ==============================================================================
+
+test:rust:unit:
+  stage: test
+  # Uses the default Rust image
+  script:
+    - cd core
+    - cargo test --all-features
+  <<: *cache_config
+
+test:elixir:unit:
+  stage: test
+  image: elixir:latest
+  script:
+    - mix local.hex --force
+    - mix deps.get --only test
+    - mix test --exclude integration
+
+test:rescript:unit:
+  stage: test
+  image: denoland/deno:latest
+  script:
+    # Use Deno to run the Rescript build and test runner
+    - deno run -A --unstable npm:rescript build
+    - deno test client/src/**/*.res # Execute Rescript tests
+
+test:integration:
+  stage: test
+  image: quay.io/podman/stable # Image must support Podman Compose to launch services
+  services: [] # No native services needed, we use Podman Compose
+  script:
+    - podman-compose up -d --build
+    - mix local.hex --force
+    - mix deps.get
+    - mix test --only integration # Elixir runs integration tests against the live services
+    - podman-compose down
+
+# ==============================================================================
+# 3. BUILD STAGE: Final Artifacts (LLVM & Podman)
+# ==============================================================================
+
+build:rust:core:
+  stage: build
+  # Default image (rust:latest) uses LLVM for maximum optimization
+  script:
+    - cd core
+    - cargo build --release # LLVM final production binary
+  artifacts:
+    paths:
+      - core/target/release/
+    expire_in: 1 month
+  <<: *cache_config
+
+build:rescript:tauri:
+  stage: build
+  image: node:lts-alpine # Uses Node/npm for Tauri-specific tooling/wrapper
+  script:
+    - npm install
+    - npm run tauri build -- --target universal-apple-darwin,x86_64-unknown-linux-gnu,x86_64-pc-windows-msvc # Cross-compile Tauri client
+  artifacts:
+    paths:
+      - client/target/
+    expire_in: 1 month
+
+build:podman:
+  stage: build
+  image: quay.io/podman/stable
+  script:
+    - podman build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA backend/
+    - podman tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA $CI_REGISTRY_IMAGE:latest
+    - podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - podman push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+    - podman push $CI_REGISTRY_IMAGE:latest
+  only:
+    - main
+    - tags
+
+# ==============================================================================
+# 4. SECURITY STAGE: SAST and Dependency Audits
+# ==============================================================================
+
+security:elixir:sast:
+  stage: security
+  image: elixir:latest
+  script:
+    - mix local.hex --force
+    - mix deps.get --only dev
+    - mix sobelow --exit-non-zero # Sobelow for OWASP focus (Elixir)
+  allow_failure: true
+
+security:rust:audit:
+  stage: security
+  # Uses the default Rust image
+  script:
+    - cd core
+    - cargo install cargo-audit
+    - cargo audit # Cargo-audit for dependency vulnerability checking
+  allow_failure: true
+
+security:container:grype:
+  stage: security
+  image: anchore/grype:latest
+  script:
+    - grype $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA # Grype for image content scanning
+  only:
+    - main
+  allow_failure: true
+
+# ==============================================================================
+# 5. DEPLOY STAGE: Deployments
+# ==============================================================================
+
+deploy:staging:
+  stage: deploy
+  image: alpine/curl:latest
+  script:
+    - echo "Deploying IDApTIK to staging using Podman."
+    - curl -X POST $STAGING_WEBHOOK_URL # Use webhook for deployment trigger
+  environment:
+    name: staging
+    url: https://staging.idaptik.hyperpolymath.dev
+  only:
+    - main
+
+deploy:production:
+  stage: deploy
+  image: alpine/curl:latest
+  script:
+    - echo "Deploying IDApTIK to production using Podman."
+    - curl -X POST $PRODUCTION_WEBHOOK_URL
+  environment:
+    name: production
+    url: https://idaptik.hyperpolymath.dev
+  only:
+    - tags
+  when: manual
