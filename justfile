@@ -61,9 +61,15 @@ PUZZLES:
 QUALITY:
   just verify         - Full verification (build + test + lint)
   just rsr-verify     - Check RSR (Rhodium Standard) compliance
-  just ci             - Run CI/CD pipeline
+  just ci             - Run CI/CD pipeline (includes RSR check)
   just benchmark      - Benchmark VM performance
+  just test-unit      - Run unit test suite
   just coverage       - Code coverage analysis
+
+EXAMPLES & TUTORIALS:
+  just examples       - Run all 5 example programs
+  just example <name> - Run specific example
+  just tutorial       - Interactive tutorial walkthrough
 
 MAINTENANCE:
   just clean-all      - Deep clean (includes ReScript cache)
@@ -71,8 +77,11 @@ MAINTENANCE:
   just status         - Show project status
   just stats          - Show code statistics
 
-EXAMPLES:
+QUICK START EXAMPLES:
   just build && just demo
+  just tutorial
+  just examples
+  just rsr-verify
   just watch
   just puzzle vault_7
   just ci
@@ -474,13 +483,55 @@ rsr-verify:
     echo "See RSR-COMPLIANCE.md for detailed report"
 
 # CI/CD pipeline
-ci: check-deps clean build test lint
+ci: check-deps clean build test lint rsr-verify
     @echo "{{green}}✅ CI pipeline complete!{{nc}}"
 
 # Benchmark VM performance
 benchmark: build check-deno
     @echo "{{cyan}}⚡ Running benchmarks...{{nc}}"
-    @echo "TODO: Implement benchmark suite"
+    deno run --allow-read benchmarks/benchmark.res.js
+
+# Run all examples
+examples: build check-deno
+    @echo "{{cyan}}🎯 Running examples...{{nc}}"
+    @echo "Example 1: Hello Reversible"
+    deno run --allow-read examples/01_hello_reversible.res.js
+    @echo ""
+    @echo "Example 2: Fibonacci"
+    deno run --allow-read examples/02_fibonacci.res.js
+    @echo ""
+    @echo "Example 3: XOR Swap"
+    deno run --allow-read examples/03_xor_swap.res.js
+    @echo ""
+    @echo "Example 4: GCD"
+    deno run --allow-read examples/04_gcd_euclidean.res.js
+    @echo ""
+    @echo "Example 5: Sorting"
+    deno run --allow-read examples/05_sorting_network.res.js
+
+# Run specific example
+example name: build check-deno
+    @echo "{{cyan}}🎯 Running example: {{name}}{{nc}}"
+    deno run --allow-read examples/{{name}}.res.js
+
+# Run unit tests (comprehensive)
+test-unit: build check-deno
+    @echo "{{cyan}}🧪 Running unit tests...{{nc}}"
+    deno run --allow-read tests/unit/test_runner.res.js
+
+# Tutorial walkthrough
+tutorial: build check-deno
+    @echo "{{cyan}}📚 Interactive Tutorial{{nc}}"
+    @echo "Follow along with: docs/tutorials/BEGINNER-TUTORIAL.md"
+    @echo ""
+    @echo "Step 1: Run demo"
+    just demo
+    @echo ""
+    @echo "Step 2: See examples"
+    @echo "  just examples"
+    @echo ""
+    @echo "Step 3: Try puzzles"
+    @echo "  just list-puzzles"
 
 # ═══════════════════════════════════════════════════════════════
 #                    DOCUMENTATION
@@ -605,3 +656,6 @@ alias w := watch
 alias v := verify
 alias h := help
 alias rsr := rsr-verify
+alias e := examples
+alias tu := tutorial
+alias bm := benchmark
