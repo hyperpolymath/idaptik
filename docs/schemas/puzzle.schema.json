@@ -1,0 +1,124 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://idaptik.dev/schemas/puzzle.json",
+  "title": "Idaptik Puzzle",
+  "description": "JSON schema for Idaptik reversible computing puzzles",
+  "type": "object",
+  "required": ["name", "description", "initialState"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Display name of the puzzle",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "description": {
+      "type": "string",
+      "description": "What the solver needs to accomplish",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "difficulty": {
+      "type": "string",
+      "enum": ["beginner", "intermediate", "advanced", "expert"],
+      "description": "Difficulty level"
+    },
+    "initialState": {
+      "type": "object",
+      "description": "Starting state (variable name → integer value)",
+      "patternProperties": {
+        "^[a-zA-Z_][a-zA-Z0-9_]*$": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1
+    },
+    "goalState": {
+      "type": "object",
+      "description": "Target state to reach",
+      "patternProperties": {
+        "^[a-zA-Z_][a-zA-Z0-9_]*$": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "maxMoves": {
+      "type": "integer",
+      "description": "Maximum number of moves allowed",
+      "minimum": 1
+    },
+    "optimalMoves": {
+      "type": "integer",
+      "description": "Optimal solution move count",
+      "minimum": 1
+    },
+    "allowedInstructions": {
+      "type": "array",
+      "description": "Instructions available to solver",
+      "items": {
+        "type": "string",
+        "enum": ["ADD", "SUB", "SWAP", "NEGATE", "NOOP", "XOR", "FLIP", "ROL", "ROR"]
+      },
+      "uniqueItems": true,
+      "minItems": 1
+    },
+    "hints": {
+      "type": "array",
+      "description": "Progressive hints for solver",
+      "items": {
+        "type": "object",
+        "required": ["moveNumber", "text"],
+        "properties": {
+          "moveNumber": {
+            "type": "integer",
+            "description": "Show hint after this many moves",
+            "minimum": 0
+          },
+          "text": {
+            "type": "string",
+            "description": "Hint text",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Puzzle metadata",
+      "properties": {
+        "author": {
+          "type": "string",
+          "description": "Puzzle creator"
+        },
+        "created": {
+          "type": "string",
+          "format": "date",
+          "description": "Creation date (YYYY-MM-DD)"
+        },
+        "tags": {
+          "type": "array",
+          "description": "Categorization tags",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "license": {
+          "type": "string",
+          "description": "Puzzle license (default: CC-BY-4.0)"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "description": "Puzzle version (semver)"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
