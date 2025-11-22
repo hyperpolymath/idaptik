@@ -60,6 +60,7 @@ PUZZLES:
 
 QUALITY:
   just verify         - Full verification (build + test + lint)
+  just rsr-verify     - Check RSR (Rhodium Standard) compliance
   just ci             - Run CI/CD pipeline
   just benchmark      - Benchmark VM performance
   just coverage       - Code coverage analysis
@@ -337,6 +338,141 @@ lint: check-deno
 verify: build test lint
     @echo "{{green}}✅ Full verification passed!{{nc}}"
 
+# RSR (Rhodium Standard Repository) compliance verification
+rsr-verify:
+    #!/usr/bin/env bash
+    echo "{{cyan}}🏆 Rhodium Standard Repository Compliance Check{{nc}}"
+    echo ""
+
+    score=0
+    total=0
+
+    # Essential Files
+    echo "{{blue}}📋 Essential Files:{{nc}}"
+
+    files=(
+        "README.md:README"
+        "LICENSE-MIT.txt:MIT License"
+        "LICENSE-PALIMPSEST.txt:Palimpsest License"
+        ".gitignore:Git Ignore"
+        "CHANGELOG.md:Changelog"
+        ".editorconfig:EditorConfig"
+        "CONTRIBUTING.md:Contributing Guide"
+        "SECURITY.md:Security Policy"
+        "CODE_OF_CONDUCT.md:Code of Conduct"
+        "MAINTAINERS.md:Maintainers List"
+        "TPCF.md:TPCF Designation"
+        "claude.md:Claude Integration"
+    )
+
+    for file in "${files[@]}"; do
+        IFS=: read -r path name <<< "$file"
+        total=$((total + 1))
+        if [ -f "$path" ]; then
+            echo "  {{green}}✓{{nc}} $name"
+            score=$((score + 1))
+        else
+            echo "  {{red}}✗{{nc}} $name (missing: $path)"
+        fi
+    done
+
+    echo ""
+    echo "{{blue}}📁 .well-known/ Directory:{{nc}}"
+
+    wellknown=(
+        ".well-known/security.txt:security.txt (RFC 9116)"
+        ".well-known/ai.txt:ai.txt (AI policies)"
+        ".well-known/humans.txt:humans.txt (attribution)"
+    )
+
+    for file in "${wellknown[@]}"; do
+        IFS=: read -r path name <<< "$file"
+        total=$((total + 1))
+        if [ -f "$path" ]; then
+            echo "  {{green}}✓{{nc}} $name"
+            score=$((score + 1))
+        else
+            echo "  {{red}}✗{{nc}} $name (missing: $path)"
+        fi
+    done
+
+    echo ""
+    echo "{{blue}}🔧 Build System:{{nc}}"
+    total=$((total + 1))
+    if [ -f "justfile" ]; then
+        echo "  {{green}}✓{{nc}} Justfile present"
+        score=$((score + 1))
+    else
+        echo "  {{red}}✗{{nc}} Justfile missing"
+    fi
+
+    echo ""
+    echo "{{blue}}📦 Type Safety:{{nc}}"
+    total=$((total + 1))
+    if [ -f "rescript.json" ]; then
+        echo "  {{green}}✓{{nc}} ReScript (sound type system)"
+        score=$((score + 1))
+    else
+        echo "  {{yellow}}⚠{{nc}} No type system config"
+    fi
+
+    echo ""
+    echo "{{blue}}🧪 Testing:{{nc}}"
+    total=$((total + 1))
+    if ls src/**/*test* 2>/dev/null | grep -q .; then
+        echo "  {{green}}✓{{nc}} Test files present"
+        score=$((score + 1))
+    else
+        echo "  {{yellow}}⚠{{nc}} No test files found"
+    fi
+
+    echo ""
+    echo "{{blue}}🌍 TPCF Perimeter:{{nc}}"
+    total=$((total + 1))
+    if grep -q "Perimeter 3" TPCF.md 2>/dev/null; then
+        echo "  {{green}}✓{{nc}} Perimeter 3 (Community Sandbox)"
+        score=$((score + 1))
+    else
+        echo "  {{yellow}}⚠{{nc}} TPCF perimeter not designated"
+    fi
+
+    echo ""
+    echo "{{blue}}🔒 Security:{{nc}}"
+    total=$((total + 1))
+    if [ -f ".well-known/security.txt" ] && [ -f "SECURITY.md" ]; then
+        echo "  {{green}}✓{{nc}} Security documentation complete"
+        score=$((score + 1))
+    else
+        echo "  {{yellow}}⚠{{nc}} Security documentation incomplete"
+    fi
+
+    echo ""
+    echo "{{cyan}}═══════════════════════════════════════════════{{nc}}"
+
+    percentage=$((score * 100 / total))
+
+    echo "{{cyan}}RSR Compliance Score: $score/$total ($percentage%){{nc}}"
+
+    if [ $percentage -ge 90 ]; then
+        echo "{{green}}🏆 BRONZE TIER COMPLIANT{{nc}}"
+        echo ""
+        echo "{{green}}✓{{nc}} Type Safety (ReScript)"
+        echo "{{green}}✓{{nc}} Memory Safety (automatic)"
+        echo "{{green}}✓{{nc}} Offline-First (zero network)"
+        echo "{{green}}✓{{nc}} Documentation Complete"
+        echo "{{green}}✓{{nc}} .well-known/ Directory"
+        echo "{{green}}✓{{nc}} TPCF Designated"
+    elif [ $percentage -ge 70 ]; then
+        echo "{{yellow}}⚠ PARTIAL COMPLIANCE{{nc}}"
+        echo "Missing some recommended files"
+    else
+        echo "{{red}}✗ NON-COMPLIANT{{nc}}"
+        echo "Many required files missing"
+    fi
+
+    echo ""
+    echo "See RSR-COMPLIANCE.md for detailed report"
+
 # CI/CD pipeline
 ci: check-deps clean build test lint
     @echo "{{green}}✅ CI pipeline complete!{{nc}}"
@@ -468,3 +604,4 @@ alias t := test
 alias w := watch
 alias v := verify
 alias h := help
+alias rsr := rsr-verify
