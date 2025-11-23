@@ -45,10 +45,13 @@ let serializeState = (state: Js.Dict.t<int>): string => {
 let deserializeState = (json: string): Js.Dict.t<int> => {
   try {
     let parsed = Js.Json.parseExn(json)
-    parsed->Js.Json.decodeObject->Belt.Option.getWithDefault(Js.Dict.empty())
-    ->Js.Dict.map((. v) => {
-      v->Js.Json.decodeNumber->Belt.Option.map(Belt.Float.toInt)->Belt.Option.getWithDefault(0)
+    let obj = parsed->Js.Json.decodeObject->Belt.Option.getWithDefault(Js.Dict.empty())
+    let result = Js.Dict.empty()
+    obj->Js.Dict.entries->Belt.Array.forEach(((key, value)) => {
+      let intValue = value->Js.Json.decodeNumber->Belt.Option.map(Belt.Float.toInt)->Belt.Option.getWithDefault(0)
+      Js.Dict.set(result, key, intValue)
     })
+    result
   } catch {
   | _ => Js.Dict.empty()
   }

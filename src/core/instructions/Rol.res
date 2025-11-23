@@ -8,18 +8,18 @@ let make = (varA: string, ~bits: int=1, ()): Instruction.t => {
   execute: state => {
     let valA = Js.Dict.get(state, varA)->Belt.Option.getWithDefault(0)
     // Rotate left by 'bits' positions (32-bit)
-    let rotated = Js.Int.lor(
-      Js.Int.lsl(valA, bits),
-      Js.Int.lsr(valA, 32 - bits)
+    let rotated = lor(
+      lsl(valA, bits),
+      lsr(valA, 32 - bits)
     )
     Js.Dict.set(state, varA, rotated)
   },
   invert: state => {
     // Inverse: rotate right by same number of bits
     let valA = Js.Dict.get(state, varA)->Belt.Option.getWithDefault(0)
-    let rotated = Js.Int.lor(
-      Js.Int.lsr(valA, bits),
-      Js.Int.lsl(valA, 32 - bits)
+    let rotated = lor(
+      lsr(valA, bits),
+      lsl(valA, 32 - bits)
     )
     Js.Dict.set(state, varA, rotated)
   },

@@ -54,21 +54,41 @@ let parsePuzzle = (jsonString: string): option<puzzle> => {
       }
     }
 
+    // Helper to get integer field
+    let getInt = (dict, key) => {
+      Js.Dict.get(dict, key)
+      ->Belt.Option.flatMap(Js.Json.decodeNumber)
+      ->Belt.Option.map(int_of_float)
+    }
+
+    // Helper to get array of strings
+    let getStringArray = (dict, key) => {
+      Js.Dict.get(dict, key)
+      ->Belt.Option.flatMap(Js.Json.decodeArray)
+      ->Belt.Option.map(arr => {
+        arr->Belt.Array.keepMap(Js.Json.decodeString)
+      })
+    }
+
     switch Js.Json.decodeObject(json) {
     | Some(obj) => {
         let name = getString(obj, "name")
         let description = getString(obj, "description")
-        let initialState = parseState(getObject(obj, "state"))
+        let initialState = parseState(getObject(obj, "initialState"))
+        let goalState = getObject(obj, "goalState")->Belt.Option.map(dict => parseState(Some(dict)))
+        let maxMoves = getInt(obj, "maxMoves")
+        let difficulty = Js.Dict.get(obj, "difficulty")->Belt.Option.flatMap(Js.Json.decodeString)
+        let allowedInstructions = getStringArray(obj, "allowedInstructions")
 
         Some({
           name,
           description,
           initialState,
-          goalState: None,  // Will add full parsing in next iteration
-          maxMoves: None,
+          goalState,
+          maxMoves,
           steps: None,
-          allowedInstructions: None,
-          difficulty: None,
+          allowedInstructions,
+          difficulty,
         })
       }
     | None => None
@@ -97,9 +117,43 @@ let checkGoal = (current: Js.Dict.t<int>, goal: Js.Dict.t<int>): bool => {
 
 // Pretty print puzzle info
 let printPuzzleInfo = (p: puzzle): unit => {
-  Js.Console.log(`🧩 Puzzle: ${p.name}`)
-  Js.Console.log(`📖 ${p.description}`)
+  Js.Console.log(`╔════════════════════════════════════════╗`)
+  Js.Console.log(`║  🧩 ${p.name}`)
+  Js.Console.log(`╚════════════════════════════════════════╝`)
   Js.Console.log(``)
-  Js.Console.log(`Initial State:`)
-  Js.Console.log(p.initialState)
+  Js.Console.log(`📖 Description: ${p.description}`)
+
+  switch p.difficulty {
+  | Some(diff) => Js.Console.log(`🎯 Difficulty: ${diff}`)
+  | None => ()
+  }
+
+  switch p.maxMoves {
+  | Some(max) => Js.Console.log(`⏱️  Max Moves: ${Belt.Int.toString(max)}`)
+  | None => ()
+  }
+
+  switch p.allowedInstructions {
+  | Some(instrs) => Js.Console.log(`🔧 Allowed: ${Js.Array2.joinWith(instrs, ", ")}`)
+  | None => ()
+  }
+
+  Js.Console.log(``)
+  Js.Console.log(`📍 Initial State:`)
+  Js.Dict.entries(p.initialState)->Belt.Array.forEach(((key, value)) => {
+    Js.Console.log(`   ${key} = ${Belt.Int.toString(value)}`)
+  })
+
+  switch p.goalState {
+  | Some(goal) => {
+      Js.Console.log(``)
+      Js.Console.log(`🎯 Goal State:`)
+      Js.Dict.entries(goal)->Belt.Array.forEach(((key, value)) => {
+        Js.Console.log(`   ${key} = ${Belt.Int.toString(value)}`)
+      })
+    }
+  | None => ()
+  }
+
+  Js.Console.log(``)
 }
