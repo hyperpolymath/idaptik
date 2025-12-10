@@ -1,6 +1,6 @@
-# IDApTIK Core - Asymmetric Camera System
+= IDApTIK Core - Asymmetric Camera System
 
-## Architecture Overview
+== Architecture Overview
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -26,34 +26,34 @@
 └──────────────────┘            └──────────────────┘
 ```
 
-## The Asymmetric Views
+== The Asymmetric Views
 
-### Hacker View (Top-Down)
-- **Camera**: Orthographic, looking straight down
-- **Visibility**: Sees ALL entities (guards, cameras, objectives)
-- **Control**: WASD to pan camera around the level
-- **Purpose**: Strategic overview, coordinate with Infiltrator
-- **Cognitive**: Must communicate what they see to Infiltrator
+=== Hacker View (Top-Down)
+- *Camera*: Orthographic, looking straight down
+- *Visibility*: Sees ALL entities (guards, cameras, objectives)
+- *Control*: WASD to pan camera around the level
+- *Purpose*: Strategic overview, coordinate with Infiltrator
+- *Cognitive*: Must communicate what they see to Infiltrator
 
-### Infiltrator View (Side-Scrolling)
-- **Camera**: Follows player, side-scrolling platformer style
-- **Visibility**: Limited radius (300 units), fades at edges
-- **Control**: WASD for movement, Space for interaction
-- **Purpose**: Direct action, stealth, infiltration
-- **Cognitive**: Must build mental map from Hacker's guidance
+=== Infiltrator View (Side-Scrolling)
+- *Camera*: Follows player, side-scrolling platformer style
+- *Visibility*: Limited radius (300 units), fades at edges
+- *Control*: WASD for movement, Space for interaction
+- *Purpose*: Direct action, stealth, infiltration
+- *Cognitive*: Must build mental map from Hacker's guidance
 
-## Building the Mental Model Together
+== Building the Mental Model Together
 
-The game forces **asymmetric information exchange**:
+The game forces *asymmetric information exchange*:
 
-1. **Hacker sees guard patrol routes** → Must describe to Infiltrator
-2. **Infiltrator sees immediate threats** → Must report to Hacker
-3. **Neither has complete picture alone** → Must collaborate
+1. *Hacker sees guard patrol routes* → Must describe to Infiltrator
+2. *Infiltrator sees immediate threats* → Must report to Hacker
+3. *Neither has complete picture alone* → Must collaborate
 
 This creates emergent gameplay where players develop shared language
 and understanding of the level layout.
 
-## File Structure
+== File Structure
 
 ```
 idaptik-core/
@@ -68,30 +68,30 @@ idaptik-core/
 │       └── infiltrator_view.rs         # Side-scroll camera system
 ```
 
-## Building
+== Building
 
 ```bash
 cd idaptik-core
 cargo build --release
 
-# Binary will be at: target/release/idaptik-core
+= Binary will be at: target/release/idaptik-core
 ```
 
-## Running Standalone (Test)
+== Running Standalone (Test)
 
 ```bash
-# Hacker view
+= Hacker view
 ./target/release/idaptik-core --role hacker --player-id 1
 
-# Infiltrator view
+= Infiltrator view
 ./target/release/idaptik-core --role infiltrator --player-id 2
 ```
 
-## Integration with Elixir Server
+== Integration with Elixir Server
 
-The Rust core communicates via **Ports** (stdin/stdout) for maximum stability.
+The Rust core communicates via *Ports* (stdin/stdout) for maximum stability.
 
-### Elixir Side (Port Supervisor)
+=== Elixir Side (Port Supervisor)
 
 ```elixir
 defmodule IDApTIK.RustCore.Supervisor do
@@ -152,9 +152,9 @@ defmodule IDApTIK.RustCore.Supervisor do
 end
 ```
 
-## Message Protocol (JSON over stdin/stdout)
+== Message Protocol (JSON over stdin/stdout)
 
-### From Elixir to Rust
+=== From Elixir to Rust
 
 ```json
 {
@@ -180,7 +180,7 @@ end
 }
 ```
 
-### From Rust to Elixir
+=== From Rust to Elixir
 
 ```json
 {
@@ -202,19 +202,19 @@ end
 }
 ```
 
-## Key Design Decisions
+== Key Design Decisions
 
-### Why Ports Instead of Rustler NIFs?
+=== Why Ports Instead of Rustler NIFs?
 
-**Dependability > Performance**
+*Dependability > Performance*
 
-- **Isolation**: Rust crash doesn't crash BEAM VM
-- **Stability**: Complex Bevy rendering loop won't block Elixir
-- **Safety**: Clear process boundary, easy to restart on failure
+- *Isolation*: Rust crash doesn't crash BEAM VM
+- *Stability*: Complex Bevy rendering loop won't block Elixir
+- *Safety*: Clear process boundary, easy to restart on failure
 
-### Why JSON Instead of FlatBuffers for Ports?
+=== Why JSON Instead of FlatBuffers for Ports?
 
-**Simplicity for Port Communication**
+*Simplicity for Port Communication*
 
 - FlatBuffers still used for network (Elixir ↔ Elixir over QUIC)
 - Ports use JSON because:
@@ -222,32 +222,32 @@ end
   - Lower coupling between Rust and Elixir
   - Port bandwidth is local, not network-constrained
 
-### Camera System Design
+=== Camera System Design
 
-**Separate rendering, shared state**
+*Separate rendering, shared state*
 
 - Both cameras receive identical game state from Elixir
 - Rendering systems filter based on role
 - No special server logic needed for asymmetric views
 - Pure client-side rendering difference
 
-## Next Steps
+== Next Steps
 
-1. **Test Standalone**: Run both roles separately, verify rendering
-2. **Integrate with Elixir**: Add Port supervisor to your Phoenix app
-3. **Add Rapier Physics**: Integrate collision detection for Infiltrator
-4. **Replace Gizmos with Sprites**: Use proper 2D assets
-5. **Add Guard AI**: Implement patrol behavior in Elixir
-6. **Voice Chat Integration**: Add real-time comms between players
+1. *Test Standalone*: Run both roles separately, verify rendering
+2. *Integrate with Elixir*: Add Port supervisor to your Phoenix app
+3. *Add Rapier Physics*: Integrate collision detection for Infiltrator
+4. *Replace Gizmos with Sprites*: Use proper 2D assets
+5. *Add Guard AI*: Implement patrol behavior in Elixir
+6. *Voice Chat Integration*: Add real-time comms between players
 
-## Performance Notes
+== Performance Notes
 
 - Bevy runs at ~60 FPS by default
 - Port communication: ~100-200 messages/sec is fine
 - State updates should be ~20-30 Hz (not every frame)
 - Input buffering handled by Bevy automatically
 
-## Debugging
+== Debugging
 
 Run with RUST_LOG for detailed logging:
 
