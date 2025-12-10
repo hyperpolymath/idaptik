@@ -1,0 +1,36 @@
+= idaptiky - Citation Guide
+:toc:
+
+== BibTeX
+
+[source,bibtex]
+----
+@software{idaptiky_2025,
+  author = {Polymath, Hyper},
+  title = {idaptiky},
+  year = {2025},
+  url = {https://github.com/hyperpolymath/idaptiky},
+  license = {AGPL-3.0-or-later}
+}
+----
+
+== Harvard Style
+
+Polymath, H. (2025) _idaptiky_ [Computer software]. Available at: https://github.com/hyperpolymath/idaptiky
+
+== OSCOLA
+
+Hyper Polymath, 'idaptiky' (2025) <https://github.com/hyperpolymath/idaptiky>
+
+== MLA
+
+Polymath, Hyper. "idaptiky." 2025, github.com/hyperpolymath/idaptiky.
+
+== APA 7
+
+Polymath, H. (2025). _idaptiky_ [Computer software]. GitHub. https://github.com/hyperpolymath/idaptiky
+
+== See Also
+
+* link:../CITATION.cff[CITATION.cff]
+* link:../codemeta.json[codemeta.json]

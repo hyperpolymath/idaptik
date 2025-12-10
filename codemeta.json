@@ -1,0 +1,27 @@
+{
+  "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
+  "@type": "SoftwareSourceCode",
+  "identifier": "idaptiky",
+  "name": "idaptiky",
+  "description": "Reversible VM v2.0.0 released with complete core engine, 13 instructions, and 26 puzzles. CLI demo/test working but interactive puzzle-solving mode not implemented.",
+  "version": "0.1.0",
+  "dateCreated": "2025-12-10",
+  "dateModified": "2025-12-10",
+  "license": "https://spdx.org/licenses/AGPL-3.0-or-later.html",
+  "codeRepository": "https://github.com/hyperpolymath/idaptiky",
+  "issueTracker": "https://github.com/hyperpolymath/idaptiky/issues",
+  "programmingLanguage": ["Guile Scheme"],
+  "developmentStatus": "active",
+  "keywords": ["RSR", "rhodium-standard"],
+  "author": [{
+    "@type": "Person",
+    "givenName": "Hyper",
+    "familyName": "Polymath",
+    "email": "hyperpolymath@proton.me"
+  }],
+  "isPartOf": [{
+    "@type": "SoftwareApplication",
+    "name": "RSR Framework",
+    "url": "https://rhodium.sh"
+  }]
+}
