@@ -7,7 +7,7 @@ describe/encode/decode.
 Examples of using the `DBConnection` behaviour are available in
 `./examples/db_agent/` and `./examples/tcp_connection/`.
 
-There is also [a series of articles on building database adapters](http://blog.plataformatec.com.br/2018/11/building-a-new-mysql-adapter-for-ecto-part-i-hello-world/). It includes articles covering both DBConnection and Ecto integrations.
+There is also [a series of articles on building database adapters](https://blog.plataformatec.com.br/2018/11/building-a-new-mysql-adapter-for-ecto-part-i-hello-world/). It includes articles covering both DBConnection and Ecto integrations.
 
 ## Contributing
 
@@ -91,7 +91,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+    https://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,

@@ -639,7 +639,7 @@ var LongPoll = class {
     setTimeout(() => this.poll(), 0);
   }
   normalizeEndpoint(endPoint) {
-    return endPoint.replace("ws://", "http://").replace("wss://", "https://").replace(new RegExp("(.*)/" + TRANSPORTS.websocket), "$1/" + TRANSPORTS.longpoll);
+    return endPoint.replace("ws://", "https://").replace("wss://", "https://").replace(new RegExp("(.*)/" + TRANSPORTS.websocket), "$1/" + TRANSPORTS.longpoll);
   }
   endpointURL() {
     return Ajax.appendParams(this.pollEndpoint, { token: this.token });

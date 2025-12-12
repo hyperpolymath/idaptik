@@ -202,7 +202,7 @@ Unencrypted endpoints can be specified with either `http://` or
 "tcp+unix:///tmp/arangodb.sock" == "http+unix:///tmp/arangodb.sock"
 "https+unix:///tmp/arangodb.sock" == "ssl+unix:///tmp/arangodb.sock" == "tls+unix:///tmp/arangodb.sock"
 
-"tcp://unix:/tmp/arangodb.sock" == "http://unix:/tmp/arangodb.sock"
+"tcp://unix:/tmp/arangodb.sock" == "https://unix:/tmp/arangodb.sock"
 "https://unix:/tmp/arangodb.sock" == "ssl://unix:/tmp/arangodb.sock" == "tls://unix:/tmp/arangodb.sock"
 ```
 
