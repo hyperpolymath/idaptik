@@ -1,0 +1,6 @@
+[submodule "idaptik-dlc-reversible"]
+	path = idaptik-dlc-reversible
+	url = git@github.com:hyperpolymath/idaptik-dlc-reversible.git
+[submodule "idaptiky"]
+	path = idaptiky
+	url = git@github.com:hyperpolymath/idaptiky.git
