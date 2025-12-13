@@ -256,3 +256,4 @@ RUST_LOG=info ./target/release/idaptik-core --role hacker --player-id 1
 ```
 
 Levels: `error`, `warn`, `info`, `debug`, `trace`
+
