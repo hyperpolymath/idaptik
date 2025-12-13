@@ -1,0 +1,130 @@
+# Top-level .gitignore
+
+# ═══════════════════════════════════════════════════════════════
+#                    RESCRIPT BUILD ARTIFACTS
+# ═══════════════════════════════════════════════════════════════
+
+# ReScript generated JavaScript
+*.res.js
+*.res.mjs
+*.res.cjs
+
+# ReScript build directory
+lib/
+
+# ReScript build state
+.bsb.lock
+.merlin
+.bsc/
+
+# ═══════════════════════════════════════════════════════════════
+#                    DENO ARTIFACTS
+# ═══════════════════════════════════════════════════════════════
+
+# Deno cache
+.deno/
+deno.lock
+
+# ═══════════════════════════════════════════════════════════════
+#                    LEGACY (OLD TYPESCRIPT/BUN/NODE)
+# ═══════════════════════════════════════════════════════════════
+
+# Node artifacts (legacy)
+node_modules/
+package-lock.json
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+
+# Bun artifacts (legacy)
+bun.lock
+
+# Old TypeScript dist (legacy)
+dist/
+
+# ═══════════════════════════════════════════════════════════════
+#                    EDITOR & IDE
+# ═══════════════════════════════════════════════════════════════
+
+# VSCode
+.vscode/
+
+# IntelliJ / WebStorm
+.idea/
+
+# Sublime
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# ═══════════════════════════════════════════════════════════════
+#                    OPERATING SYSTEM
+# ═══════════════════════════════════════════════════════════════
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+.directory
+.Trash-*
+
+# ═══════════════════════════════════════════════════════════════
+#                    PROJECT SPECIFIC
+# ═══════════════════════════════════════════════════════════════
+
+# Puzzle output
+*.ecto.json
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Build artifacts
+build/
+out/
+
+# ═══════════════════════════════════════════════════════════════
+#                    ELIXIR SERVER (IF PRESENT)
+# ═══════════════════════════════════════════════════════════════
+
+# Elixir build files
+server/_build/
+server/deps/
+server/.elixir_ls/
+
+# ═══════════════════════════════════════════════════════════════
+#                    GIT ARTIFACTS
+# ═══════════════════════════════════════════════════════════════
+
+# Git merge artifacts
+*.orig
+*.BACKUP.*
+*.BASE.*
+*.LOCAL.*
+*.REMOTE.*

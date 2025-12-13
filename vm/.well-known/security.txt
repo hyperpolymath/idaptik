@@ -1,0 +1,12 @@
+# security.txt - RFC 9116 compliant
+# https://securitytxt.org/
+
+Contact: https://github.com/Hyperpolymath/idaptiky/security/advisories/new
+Contact: mailto:security@idaptiky.dev
+Preferred-Languages: en
+Canonical: https://github.com/Hyperpolymath/idaptiky/blob/main/.well-known/security.txt
+Policy: https://github.com/Hyperpolymath/idaptiky/blob/main/SECURITY.md
+Acknowledgments: https://github.com/Hyperpolymath/idaptiky/blob/main/SECURITY.md#acknowledgments
+
+# Project Information
+Expires: 2026-12-31T23:59:59Z
