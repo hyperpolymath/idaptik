@@ -53,7 +53,27 @@ The game forces *asymmetric information exchange*:
 This creates emergent gameplay where players develop shared language
 and understanding of the level layout.
 
-== File Structure
+== Full Project Structure
+
+```
+idaptik/
+├── idaptik/                            # Main game implementation
+│   ├── IDApTry/
+│   │   ├── backend/                    # Elixir Phoenix multiplayer server
+│   │   └── frontend/                   # ReScript game client
+│   ├── engine/                         # Rust WASM game engine
+│   └── frontend/                       # ReScript frontend
+├── vm/                                 # Reversible Computing VM
+│   ├── src/                            # ReScript VM implementation
+│   └── data/
+│       ├── puzzles/                    # Core puzzle content
+│       └── dlc/                        # Downloadable content packs
+│           ├── manifest.json           # DLC registry
+│           └── packs/                  # Individual DLC packs
+└── ELIXIR_INTEGRATION.md               # Integration patterns
+```
+
+== Core File Structure
 
 ```
 idaptik-core/
