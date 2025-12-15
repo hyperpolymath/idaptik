@@ -152,6 +152,13 @@
 (define session-history
   '((snapshots
      ((date . "2025-12-15")
+      (session . "security-fixes")
+      (accomplishments
+       ("SHA-pinned rust-toolchain, rust-cache, codecov in rust-ci.yml"
+        "Fixed CodeQL matrix: removed rust/js-ts (no source), added actions"
+        "OpenSSF Scorecard compliance"))
+      (notes . "Fixed unpinned GitHub Actions for Pinned-Dependencies check"))
+     ((date . "2025-12-15")
       (session . "initial-state-creation")
       (accomplishments
        ("Added META.scm, ECOSYSTEM.scm, STATE.scm"
