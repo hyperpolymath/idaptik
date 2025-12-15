@@ -210,9 +210,13 @@ idaptik-reversible/
 │   │       └── Noop.res
 │   └── CLI.res                  # Command-line interface
 ├── data/
-│   └── puzzles/
-│       ├── vault_7.json
-│       └── vault_defuse.json
+│   ├── puzzles/                 # Core puzzles
+│   │   ├── vault_7.json
+│   │   └── vault_defuse.json
+│   └── dlc/                     # Downloadable content
+│       ├── manifest.json        # DLC registry
+│       ├── packs/               # Individual DLC packs
+│       └── README.md            # DLC documentation
 ├── rescript.json                # ReScript config
 ├── deno.json                    # Deno config
 ├── justfile                     # Build system (600+ lines!)
@@ -366,6 +370,46 @@ just demo
 - [ ] Puzzle editor
 - [ ] Performance benchmarks
 - [ ] Optimization passes
+
+---
+
+== 📦 DLC Content System
+
+The VM supports downloadable content packs for additional puzzles and challenges.
+
+=== DLC Location
+
+```
+data/
+├── puzzles/     # Core puzzles (included)
+└── dlc/         # Downloadable content
+    ├── manifest.json
+    ├── packs/   # Individual DLC packs
+    └── README.md
+```
+
+=== DLC Categories
+
+- *Quantum Computing* - Quantum gates and reversible quantum operations
+- *Cryptography* - Reversible cryptographic puzzles
+- *Logic Circuits* - Digital logic and circuit design
+- *Algorithms* - Classic algorithms implemented reversibly
+- *Challenge Packs* - Community-created puzzle challenges
+
+=== Using DLC
+
+```bash
+# List available DLC packs
+just dlc-list
+
+# Install a DLC pack
+just dlc-install <pack-name>
+
+# Run a DLC puzzle
+just puzzle <pack>:<puzzle>
+```
+
+See `data/dlc/README.md` for details on creating DLC packs.
 
 ---
 

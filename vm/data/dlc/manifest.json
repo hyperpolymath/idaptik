@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "IDApTIK DLC Registry",
+  "version": "1.0.0",
+  "description": "Downloadable content packs for the reversible computing VM",
+  "packs": [],
+  "categories": [
+    {
+      "id": "quantum",
+      "name": "Quantum Computing",
+      "description": "Quantum gates and reversible quantum operations"
+    },
+    {
+      "id": "crypto",
+      "name": "Cryptography",
+      "description": "Reversible cryptographic operations and puzzles"
+    },
+    {
+      "id": "logic",
+      "name": "Logic Circuits",
+      "description": "Digital logic and reversible circuit design"
+    },
+    {
+      "id": "algorithms",
+      "name": "Algorithms",
+      "description": "Classic algorithms implemented reversibly"
+    },
+    {
+      "id": "challenge",
+      "name": "Challenge Packs",
+      "description": "Community-created puzzle challenges"
+    }
+  ],
+  "schema_version": "1.0.0",
+  "requires_vm_version": ">=2.0.0"
+}
