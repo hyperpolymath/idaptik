@@ -1,14 +1,22 @@
-# TypeScript/JavaScript → ReScript Conversion (Partial)
+# TypeScript/JavaScript → ReScript Conversion
 
-This repo has some ReScript but still contains TS/JS that needs conversion.
+## Status: COMPLETE ✓
 
-## Remaining Work
-1. Find all `.ts`/`.tsx`/`.js`/`.jsx` files (excluding `.res.js`)
-2. Create ReScript equivalents
-3. Migrate logic and update imports
-4. Delete original TS/JS files
+All application code has been converted to ReScript.
+
+## Remaining JS/TS Files (Acceptable)
+
+These files are **not** application code and are allowed:
+
+### Auto-Generated WASM Bindings
+- `idaptik/frontend/src/wasm/idaptik_engine.js` - wasm-bindgen output
+- `idaptik/frontend/src/wasm/idaptik_engine.d.ts` - TypeScript declarations
+- `idaptik/frontend/src/wasm/idaptik_engine_bg.wasm.d.ts` - WASM types
+
+### Build Configuration
+- `idaptik/frontend/vite.config.js` - Vite build tooling
 
 ## Policy
-- No NEW TypeScript/JavaScript allowed
-- CI will block new TS/JS files
-- Existing TS/JS should be migrated over time
+- No NEW TypeScript/JavaScript allowed for application code
+- Auto-generated WASM bindings are acceptable
+- Build tool configs (vite.config.js) are acceptable
